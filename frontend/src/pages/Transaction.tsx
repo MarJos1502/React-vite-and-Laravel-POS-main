@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../lib/axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Receipt from "../components/Receipt"; // Adjust path as needed
 
@@ -29,7 +29,7 @@ export default function Transactions() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/products");
+      const res = await axios.get("/api/products");
       setProducts(res.data);
     } catch (err) {
       setError("🚨 Failed to fetch products.");
@@ -58,6 +58,21 @@ export default function Transactions() {
   const removeFromCart = (id: number) => {
     setTransaction(null); // Clear receipt on cart change
     setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateCartQuantity = (id: number, quantity: number) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, quantity: Math.max(1, Math.min(quantity, item.stock)) }
+          : item
+      )
+    );
+  };
+
+  const handleCartFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Optionally, you can validate or process the cart here
   };
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -133,63 +148,77 @@ export default function Transactions() {
           </div>
 
           <div className="col-md-6">
-            <h4>Cart</h4>
-            <ul className="list-group">
-              {cart.map((item) => (
-                <li
-                  key={item.id}
-                  className="list-group-item d-flex justify-content-between align-items-center"
-                >
-                  {item.name} x {item.quantity}
-                  <div>
-                    <span className="me-2">₱{item.price * item.quantity}</span>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-3">
-              <input
-                type="email"
-                className="form-control mb-2"
-                placeholder="Customer Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <input
-                type="number"
-                className="form-control mb-2"
-                placeholder="Discount"
-                value={discount}
-                onChange={(e) => setDiscount(Number(e.target.value))}
-              />
-              <h5>Total: ₱{total}</h5>
-              <h5>Final: ₱{final}</h5>
-              <button className="btn btn-success w-100" onClick={checkout}>
-                Checkout
-              </button>
-            </div>
-
-            {transaction && (
-              <div className="mt-4 p-3 border rounded bg-light">
-                <h5>🧾 Receipt Preview</h5>
-                <Receipt transaction={transaction} />
-                <a
-                  href={`http://localhost:8000/api/receipt/download/${transaction.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline-dark mt-2"
-                >
-                  📥 Download PDF
-                </a>
+            <form onSubmit={handleCartFormSubmit}>
+              <h4>Cart</h4>
+              <ul className="list-group">
+                {cart.map((item) => (
+                  <li
+                    key={item.id}
+                    className="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    <span>
+                      {item.name}
+                      <input
+                        type="number"
+                        min={1}
+                        max={item.stock}
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateCartQuantity(item.id, Number(e.target.value))
+                        }
+                        style={{ width: 60, marginLeft: 10, marginRight: 10 }}
+                      />
+                      <span className="text-muted">/ {item.stock} in stock</span>
+                    </span>
+                    <div>
+                      <span className="me-2">₱{item.price * item.quantity}</span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3">
+                <input
+                  type="email"
+                  className="form-control mb-2"
+                  placeholder="Customer Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <input
+                  type="number"
+                  className="form-control mb-2"
+                  placeholder="Discount"
+                  value={discount}
+                  onChange={(e) => setDiscount(Number(e.target.value))}
+                />
+                <h5>Total: ₱{total}</h5>
+                <h5>Final: ₱{final}</h5>
+                <button className="btn btn-success w-100" onClick={checkout} type="button">
+                  Checkout
+                </button>
               </div>
-            )}
+              {transaction && (
+                <div className="mt-4 p-3 border rounded bg-light">
+                  <h5>🧾 Receipt Preview</h5>
+                  <Receipt transaction={transaction} />
+                  <a
+                    href={`http://localhost:8000/api/receipt/download/${transaction.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline-dark mt-2"
+                  >
+                    📥 Download PDF
+                  </a>
+                </div>
+              )}
+            </form>
           </div>
         </div>
       </div>

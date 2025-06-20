@@ -193,7 +193,7 @@ export default function ProductManagement() {
               <td>₱{product.price}</td>
               <td>{product.stock}</td>
               {canModifyProducts && (
-                <td>
+              <td>
                   <button
                     className="btn btn-sm btn-warning me-2"
                     onClick={() => openEditModal(product)}
@@ -206,7 +206,7 @@ export default function ProductManagement() {
                   >
                     Delete
                   </button>
-                </td>
+              </td>
               )}
             </tr>
           ))}
@@ -282,8 +282,10 @@ export default function ProductManagement() {
                       }
                     />
                   </div>
+                  <div className="mb-3"></div>
                 </form>
               </div>
+              
               <div className="modal-footer">
                 <button
                   type="button"

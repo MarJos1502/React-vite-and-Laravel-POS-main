@@ -42,9 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Permission-based routes
-    Route::middleware(['permission:manage products'])->group(function () {
-        Route::apiResource('products', ProductController::class)->except(['index', 'show']);
-    });
+    
+        Route::apiResource('products', ProductController::class);
 
     Route::middleware(['permission:view reports'])->group(function () {
         Route::get('/reports', [ReportController::class, 'index']);

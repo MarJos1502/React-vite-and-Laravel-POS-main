@@ -14,16 +14,23 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'stock' => 'required|integer',
+            'sku' => 'required|string|max:255|unique:products,sku',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('images'), $imageName);
-            $data['image'] = 'images/' . $imageName;
+            $validated['image'] = 'images/' . $imageName;
         }
 
-        return Product::create($data);
+        return Product::create($validated);
     }
 
     public function show(Product $product)

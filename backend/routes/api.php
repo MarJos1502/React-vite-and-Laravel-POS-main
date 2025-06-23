@@ -45,14 +45,14 @@ Route::middleware('auth:sanctum')->group(function () {
     
         Route::apiResource('products', ProductController::class);
 
-    Route::middleware(['permission:view reports'])->group(function () {
-        Route::get('/reports', [ReportController::class, 'index']);
-        Route::get('/reports/sales', [ReportController::class, 'sales']);
-    });
+    // Route::middleware(['permission:view reports'])->group(function () {
+    //     Route::get('/reports', [ReportController::class, 'index']);
+    //     Route::get('/reports/sales', [ReportController::class, 'sales']);
+    // });
 
-    Route::middleware(['permission:process payments'])->group(function () {
-        Route::post('/payments', [PaymentController::class, 'store']);
-    });
+    // Route::middleware(['permission:process payments'])->group(function () {
+    //     Route::post('/payments', [PaymentController::class, 'store']);
+    // });
 });
 
 // Public product viewing

@@ -23,7 +23,7 @@ class Kernel extends HttpKernel
     ];
 
     protected $routeMiddleware = [
-        'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
-        'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+        // 'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+        // 'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
     ];
 }

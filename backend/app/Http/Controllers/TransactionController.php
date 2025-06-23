@@ -18,7 +18,7 @@ class TransactionController extends Controller
             'products.*.id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
             'discount' => 'nullable|numeric|min:0',
-            'email' => 'required|email'
+            'email' => 'nullable|email'
         ]);
 
         $items = [];
@@ -50,7 +50,7 @@ class TransactionController extends Controller
             'total_amount' => $total,
             'discount' => $discount,
             'final_amount' => $final,
-            'customer_email' => $validated['email'],
+            'customer_email' => $validated['email'] ?? null,
         ]);
 
         foreach ($items as $item) {
@@ -60,6 +60,7 @@ class TransactionController extends Controller
         $transaction->load('items.product'); // Load relationship for response
 
         // Email
+        if (isset($validated['email'])) {
         Mail::to($validated['email'])->send(new ReceiptMail([
             'items' => $transaction->items->map(fn($i) => [
                 'name' => $i->product->name,
@@ -70,6 +71,7 @@ class TransactionController extends Controller
             'discount' => $discount,
             'final' => $final,
         ]));
+        }
 
         return response()->json([
             'message' => 'Transaction complete.',

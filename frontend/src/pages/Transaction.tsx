@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "../lib/axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Receipt from "../components/Receipt"; // Adjust path as needed
+import CheckoutModal from "../components/CheckoutModal";
 
 interface Product {
   id: number;
@@ -17,11 +18,12 @@ interface CartItem extends Product {
 export default function Transactions() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [email, setEmail] = useState("");
   const [discount, setDiscount] = useState(0);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [transaction, setTransaction] = useState<any | null>(null); // Store latest transaction
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     fetchProducts();
@@ -41,10 +43,6 @@ export default function Transactions() {
     setCart((prev) => {
       const exists = prev.find((item) => item.id === product.id);
       if (exists) {
-        if (exists.quantity + 1 > product.stock) {
-          setError(`🚨 Not enough stock for ${product.name}`);
-          return prev;
-        }
         return prev.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -56,18 +54,20 @@ export default function Transactions() {
   };
 
   const removeFromCart = (id: number) => {
-    setTransaction(null); // Clear receipt on cart change
-    setCart((prev) => prev.filter((item) => item.id !== id));
+    setTransaction(null);
+    setCart((prev) => [...prev.filter((item) => item.id !== id)]);
   };
 
   const updateCartQuantity = (id: number, quantity: number) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, Math.min(quantity, item.stock)) }
-          : item
-      )
-    );
+    setCart((prevCart) => {
+      const newCart = prevCart.map((item) => {
+        if (item.id === id) {
+          return { ...item, quantity: Math.max(0, quantity) };
+        }
+        return item;
+      });
+      return newCart;
+    });
   };
 
   const handleCartFormSubmit = (e: React.FormEvent) => {
@@ -82,18 +82,13 @@ export default function Transactions() {
     setError("");
     setSuccess("");
 
-    if (!email) {
-      setError("🚨 Please enter a valid email.");
-      return;
-    }
-
     try {
       const response = await axios.post(
         "http://localhost:8000/api/transactions",
         {
           products: cart.map(({ id, quantity }) => ({ id, quantity })),
-          email,
           discount,
+          email,
         },
         {
           headers: {
@@ -105,15 +100,10 @@ export default function Transactions() {
       const latestTransaction = response.data.transaction;
       setTransaction(latestTransaction);
 
-      await axios.post("http://localhost:8000/api/send-receipt-email", {
-        email,
-        transaction: latestTransaction,
-      });
-
-      setSuccess("✅ Transaction completed and receipt sent!");
+      setSuccess("✅ Transaction completed!");
       setCart([]);
-      setEmail("");
       setDiscount(0);
+      setShowCheckoutModal(false);
     } catch (err) {
       setError("🚨 Transaction failed. Please try again.");
     }
@@ -160,18 +150,21 @@ export default function Transactions() {
                       {item.name}
                       <input
                         type="number"
-                        min={1}
-                        max={item.stock}
+                        min="0"
                         value={item.quantity}
                         onChange={(e) =>
                           updateCartQuantity(item.id, Number(e.target.value))
                         }
                         style={{ width: 60, marginLeft: 10, marginRight: 10 }}
                       />
-                      <span className="text-muted">/ {item.stock} in stock</span>
+                      <span className="text-muted">
+                        / {item.stock} in stock
+                      </span>
                     </span>
                     <div>
-                      <span className="me-2">₱{item.price * item.quantity}</span>
+                      <span className="me-2">
+                        ₱{item.price * item.quantity}
+                      </span>
                       <button
                         type="button"
                         className="btn btn-sm btn-danger"
@@ -183,27 +176,36 @@ export default function Transactions() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-3">
-                <input
-                  type="email"
-                  className="form-control mb-2"
-                  placeholder="Customer Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                  type="number"
-                  className="form-control mb-2"
-                  placeholder="Discount"
-                  value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value))}
-                />
-                <h5>Total: ₱{total}</h5>
-                <h5>Final: ₱{final}</h5>
-                <button className="btn btn-success w-100" onClick={checkout} type="button">
-                  Checkout
-                </button>
+              <div className="mt-3 row g-2 align-items-center">
+                <div className="col">
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Discount"
+                    value={discount > 0 ? discount : ""}
+                    onChange={(e) => setDiscount(Math.max(0, Number(e.target.value)))}
+                  />
+                </div>
+                <div className="col">
+                  <input
+                    type="email"
+                    className="form-control"
+                    placeholder="Customer Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
+              <h5>Total: ₱{total}</h5>
+              <h5>Final: ₱{final}</h5>
+              <button
+                className="btn btn-success w-100"
+                onClick={() => setShowCheckoutModal(true)}
+                type="button"
+              >
+                Checkout
+              </button>
               {transaction && (
                 <div className="mt-4 p-3 border rounded bg-light">
                   <h5>🧾 Receipt Preview</h5>
@@ -221,6 +223,17 @@ export default function Transactions() {
             </form>
           </div>
         </div>
+        <CheckoutModal
+          show={showCheckoutModal}
+          handleClose={() => setShowCheckoutModal(false)}
+          handleCheckout={checkout}
+          cart={cart}
+          total={total}
+          final={final}
+          discount={discount}
+          email={email}
+          setEmail={setEmail}
+        />
       </div>
     </div>
   );

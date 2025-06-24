@@ -22,21 +22,26 @@ export default function Survey({ paymentId }: SurveyProps) {
       });
       setMessage("Thank you for your feedback!");
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/feedback-analytics");
       }, 2000);
-    } catch (error) {
+    } catch {
       setMessage("Failed to submit feedback. Please try again.");
     }
   };
 
   return (
-    <div className="vh-100 d-flex align-items-center justify-content-center bg-light" style={{ marginTop: '-56px', paddingTop: '56px' }}>
+    <div
+      className="vh-100 d-flex align-items-center justify-content-center bg-light"
+      style={{ marginTop: "-56px", paddingTop: "56px" }}
+    >
       <div className="container p-4">
         <div className="row justify-content-center">
           <div className="col-12 col-md-8 col-lg-6">
             <div className="card shadow">
               <div className="card-body">
-                <h3 className="card-title text-center mb-4">Customer Feedback</h3>
+                <h3 className="card-title text-center mb-4">
+                  Customer Feedback
+                </h3>
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4">
                     <label className="form-label">Rate your experience:</label>
@@ -47,7 +52,12 @@ export default function Survey({ paymentId }: SurveyProps) {
                     >
                       {[1, 2, 3, 4, 5].map((n) => (
                         <option key={n} value={n}>
-                          {n} - {["Poor", "Fair", "Good", "Very Good", "Excellent"][n - 1]}
+                          {n} -{" "}
+                          {
+                            ["Poor", "Fair", "Good", "Very Good", "Excellent"][
+                              n - 1
+                            ]
+                          }
                         </option>
                       ))}
                     </select>
@@ -64,14 +74,19 @@ export default function Survey({ paymentId }: SurveyProps) {
                     />
                   </div>
 
-                  <button type="submit" className="btn btn-primary btn-lg w-100">
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-lg w-100"
+                  >
                     Submit Feedback
                   </button>
 
                   {message && (
                     <div
                       className={`alert mt-3 text-center ${
-                        message.includes("Thank") ? "alert-success" : "alert-danger"
+                        message.includes("Thank")
+                          ? "alert-success"
+                          : "alert-danger"
                       }`}
                       role="alert"
                     >

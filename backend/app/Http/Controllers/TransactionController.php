@@ -61,16 +61,16 @@ class TransactionController extends Controller
 
         // Email
         if (isset($validated['email'])) {
-        Mail::to($validated['email'])->send(new ReceiptMail([
-            'items' => $transaction->items->map(fn($i) => [
-                'name' => $i->product->name,
-                'price' => $i->price,
-                'quantity' => $i->quantity,
-            ]),
-            'total' => $total,
-            'discount' => $discount,
-            'final' => $final,
-        ]));
+            Mail::to($validated['email'])->send(new ReceiptMail([
+                'items' => $transaction->items->map(fn($i) => [
+                    'name' => $i->product->name,
+                    'price' => $i->price,
+                    'quantity' => $i->quantity,
+                ]),
+                'total' => $total,
+                'discount' => $discount,
+                'final' => $final,
+            ]));
         }
 
         return response()->json([

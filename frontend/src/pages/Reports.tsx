@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "../lib/axios";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -27,7 +28,7 @@ ChartJS.register(
 );
 
 export default function Reports() {
-  const [reportData] = useState({
+  const [reportData, setReportData] = useState({
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
       {
@@ -44,6 +45,20 @@ export default function Reports() {
       },
     ],
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get("/api/reports/financial");
+        setReportData(res.data);
+      } catch {
+        // Optionally handle error
+      }
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="container py-5">

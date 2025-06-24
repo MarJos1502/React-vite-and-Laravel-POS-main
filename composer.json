@@ -1,5 +1,6 @@
 {
     "require": {
-        "spatie/laravel-permission": "*"
+        "spatie/laravel-permission": "*",
+        "pusher/pusher-php-server": "*"
     }
 }

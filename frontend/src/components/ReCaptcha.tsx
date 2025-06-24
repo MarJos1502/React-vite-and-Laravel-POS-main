@@ -29,11 +29,11 @@ const ReCaptcha: React.FC = () => {
     <form onSubmit={handleSubmit}>
       <input type="text" placeholder="John Benjie" required />
       {isScriptLoaded && (
-      <ReCAPTCHA
-          sitekey="6LcBmGMrAAAAAGtpUY3k_ooseL9dX5m-5TAVXKeC"
-        onChange={(value) => setCaptchaValue(value)}
-        ref={recaptchaRef}
-      />
+        <ReCAPTCHA
+          sitekey="6LdpDFwrAAAAAFGHJHgwn3ksCTGh-koeC2uYFZlG"
+          onChange={(value) => setCaptchaValue(value)}
+          ref={recaptchaRef}
+        />
       )}
       <button type="submit">Submit</button>
     </form>

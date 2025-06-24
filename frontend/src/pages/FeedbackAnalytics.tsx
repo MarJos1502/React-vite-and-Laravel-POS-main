@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "../lib/axios";
 import { Pie, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -27,7 +28,7 @@ ChartJS.register(
 );
 
 export default function FeedbackAnalytics() {
-  const [ratingsData] = useState({
+  const [ratingsData, setRatingsData] = useState({
     labels: ["Excellent", "Good", "Average", "Poor"],
     datasets: [
       {
@@ -38,7 +39,7 @@ export default function FeedbackAnalytics() {
     ],
   });
 
-  const [satisfactionTrend] = useState({
+  const [satisfactionTrend, setSatisfactionTrend] = useState({
     labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
     datasets: [
       {
@@ -52,6 +53,21 @@ export default function FeedbackAnalytics() {
       },
     ],
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get("/api/feedback/analytics");
+        setRatingsData(res.data.ratingsData);
+        setSatisfactionTrend(res.data.satisfactionTrend);
+      } catch {
+        // Optionally handle error
+      }
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="container py-5">

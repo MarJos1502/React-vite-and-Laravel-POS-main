@@ -43,7 +43,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setError("");
     try {
       const response = await fetch(
-        "https://hook.eu2.make.com/snc4pm6kaapixwvaxnfcy3fvy08nctsg",
+        "https://hook.us2.make.com/fm8s209ogkuzupn24ai3rl9me1uc2qxv",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
